@@ -1,0 +1,3 @@
+[submodule "CMakeLibrary"]
+	path = CMakeLibrary
+	url = https://github.com/dormon/CMakeLibrary
