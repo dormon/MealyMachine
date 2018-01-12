@@ -59,17 +59,40 @@ inline bool MealyMachine::_nextState(State const&state){
   return true;
 }
 
+/**
+ * @brief This function adds state to Mealy machine.
+ *
+ * @param chooser instance of transition chooser.
+ * @param name name of the added state
+ *
+ * @return This function returns Id of newly added state.
+ */
 MealyMachine::StateIndex MealyMachine::addState(
-    std::shared_ptr<TransitionChooser>const&chooser,std::string const&name){
-  assert(chooser!=nullptr);
-  assert(chooser->getSize()<=this->_symbolBuffer.size());
-  auto id = this->_states.size();
-  this->_states.push_back(State(TransitionVector(),chooser,nullptr,nullptr,name));
+    std::shared_ptr<TransitionChooser>const&chooser,
+    std::string                       const&name   ){
+
+  if(chooser == nullptr){
+    std::stringstream ss;
+    ss << "MealyMachine::addState(" << name << ")";
+    ss << " - transition chooser is nullptr";
+    throw std::invalid_argument(ss.str());
+  }
+
+  if(chooser->getSize() > _symbolBuffer.size()){
+    std::stringstream ss;
+    ss << "MealyMachine::addState(" << name << ")";
+    ss << " - transition chooser's symbol size (" << chooser->getSize();
+    ss << ") is greater that this MealyMachine symbol buffer size (";
+    ss << _symbolBuffer.size() << ")";
+    throw std::invalid_argument(ss.str());
+  }
+
+  auto id = _states.size();
+  _states.emplace_back(TransitionVector(),chooser,nullptr,nullptr,name);
   return id;
 }
 
 MealyMachine::StateIndex MealyMachine::addState(std::string const&name){
-  assert(this);
   return this->addState(std::make_shared<MapTransitionChooser<1>>(),name);
 }
 
@@ -78,6 +101,13 @@ void MealyMachine::addTransition(
     TransitionSymbol const&lex     ,
     StateIndex       const&to      ,
     Callback         const&callback){
+  if(from >= _states.size()){
+    std::stringstream ss;
+    ss << "MealyMachine::addTransition(" << from << "," <<  lex << "," << to << ")";
+    ss << " - from symbol(" << from << " does not exists";
+    throw std::invalid_argument(ss.str());
+  }
+
   assert(from<this->_states.size());
   assert(to<this->_states.size());
   assert(std::get<CHOOSER>(this->_states[from])!=nullptr);
