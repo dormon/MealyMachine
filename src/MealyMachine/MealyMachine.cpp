@@ -11,7 +11,7 @@
 #include<MealyMachine/MapTransitionChooser.h>
 #include<MealyMachine/TransitionChooser.h>
 
-using namespace dsl;
+using namespace mealyMachine;
 
 std::string getHexRepresentation(
     MealyMachine::TransitionSymbol const&symbol,
@@ -24,38 +24,38 @@ std::string getHexRepresentation(
 }
 
 MealyMachine::MealyMachine(size_t largestState){
-  this->_symbolBuffer.resize(largestState);
+  symbolBuffer.resize(largestState);
 }
 
 MealyMachine::~MealyMachine(){
 }
 
-inline void MealyMachine::_call(Transition const&transition){
+inline void MealyMachine::call(Transition const&transition){
   auto clb = std::get<CALLBACK>(transition);
   if(clb)clb(this);
 }
 
-inline bool MealyMachine::_nextState(State const&state){
+inline bool MealyMachine::nextState(State const&state){
   auto const& transitionIndex = 
-    std::get<CHOOSER>(state)->getTransition(this->_currentSymbol);
+    std::get<CHOOSER>(state)->getTransition(currentSymbol);
   Transition const* transition = nullptr;
   if(transitionIndex == MealyMachine::nonexistingTransition){
     auto trans = std::get<ELSE_TRANSITION>(state);
     if(!trans){
-      if(this->_quiet)return false;
+      if(quiet)return false;
       std::stringstream ss;
-      ss<<"MealyMachine::_nextState - ";
+      ss<<"mealyMachine::_nextState - ";
       ss<<"there is no suitable transition from state ";
-      ss<<this->_currentState<<" using symbol: 0x"<<
-        getHexRepresentation(this->_currentSymbol,this->_currentSymbolSize);
-      ss<<" at position: "<<this->_currentSymbol;
+      ss<<currentState<<" using symbol: 0x"<<
+        getHexRepresentation(currentSymbol,currentSymbolSize);
+      ss<<" at position: "<<currentSymbol;
       throw std::invalid_argument(ss.str());
       return false;
     }
     transition = &*trans;
   }else transition = &std::get<TRANSITIONS>(state)[transitionIndex];
-  this->_call(*transition);
-  this->_currentState = std::get<STATE_INDEX>(*transition);
+  call(*transition);
+  currentState = std::get<STATE_INDEX>(*transition);
   return true;
 }
 
@@ -73,49 +73,73 @@ MealyMachine::StateIndex MealyMachine::addState(
 
   if(chooser == nullptr){
     std::stringstream ss;
-    ss << "MealyMachine::addState(" << name << ")";
+    ss << "mealyMachine::addState(" << name << ")";
     ss << " - transition chooser is nullptr";
     throw std::invalid_argument(ss.str());
   }
 
-  if(chooser->getSize() > _symbolBuffer.size()){
+  if(chooser->getSize() > symbolBuffer.size()){
     std::stringstream ss;
-    ss << "MealyMachine::addState(" << name << ")";
+    ss << "mealyMachine::addState(" << name << ")";
     ss << " - transition chooser's symbol size (" << chooser->getSize();
-    ss << ") is greater that this MealyMachine symbol buffer size (";
-    ss << _symbolBuffer.size() << ")";
+    ss << ") is greater that this mealyMachine symbol buffer size (";
+    ss << symbolBuffer.size() << ")";
     throw std::invalid_argument(ss.str());
   }
 
-  auto id = _states.size();
-  _states.emplace_back(TransitionVector(),chooser,nullptr,nullptr,name);
+  auto id = states.size();
+  states.emplace_back(TransitionVector(),chooser,nullptr,nullptr,name);
   return id;
 }
 
+/**
+ * @brief This function adds new state to Mealy machine.
+ * This function selects MapTransitionChooser as TransitionChooser.
+ *
+ * @param name name of the added state
+ *
+ * @return id of new state
+ */
 MealyMachine::StateIndex MealyMachine::addState(std::string const&name){
   return this->addState(std::make_shared<MapTransitionChooser<1>>(),name);
 }
 
+/**
+ * @brief This function adds/creates transition between two states
+ *
+ * @param from Id of start state
+ * @param symbol transition symbol that is needed in order to perform transition
+ * @param to id of end state
+ * @param callback when the transition happens, this callback is executed.
+ */
 void MealyMachine::addTransition(
     StateIndex       const&from    ,
     TransitionSymbol const&lex     ,
     StateIndex       const&to      ,
     Callback         const&callback){
-  if(from >= _states.size()){
+  if(from >= states.size()){
     std::stringstream ss;
-    ss << "MealyMachine::addTransition(" << from << "," <<  lex << "," << to << ")";
+    ss << "mealyMachine::addTransition(" << from << "," <<  lex << "," << to << ")";
     ss << " - from symbol(" << from << " does not exists";
     throw std::invalid_argument(ss.str());
   }
 
-  assert(from<this->_states.size());
-  assert(to<this->_states.size());
-  assert(std::get<CHOOSER>(this->_states[from])!=nullptr);
-  std::get<CHOOSER>(this->_states[from])->addTransition(lex);
-  std::get<TRANSITIONS>(this->_states[from]).push_back(
+  assert(from<states.size());
+  assert(to<states.size());
+  assert(std::get<CHOOSER>(states[from])!=nullptr);
+  std::get<CHOOSER>(states[from])->addTransition(lex);
+  std::get<TRANSITIONS>(states[from]).push_back(
       Transition(to,callback));
 }
 
+/**
+ * @brief This function adds/creates transition between two states.
+ *
+ * @param from id of start state
+ * @param symbols vector of accepted transition symbols
+ * @param to id of end state
+ * @param callback when the transition happens, this callback is executed.
+ */
 void MealyMachine::addTransition(
     StateIndex                   const&from    ,
     std::vector<TransitionSymbol>const&symbols ,
@@ -125,15 +149,24 @@ void MealyMachine::addTransition(
     this->addTransition(from,x,to,callback);
 }
 
+/**
+ * @brief This function adds/creates transition between two states.
+ *
+ * @param from id of start state
+ * @param symbolFrom start of range of accepted transition symbols
+ * @param symbolTo end of range of accepted transition symbols
+ * @param to id of end state
+ * @param callback when the transition happens, this callback is executed.
+ */
 void MealyMachine::addTransition(
     StateIndex                   const&from      ,
     TransitionSymbol             const&symbolFrom,
     TransitionSymbol             const&symbolTo  ,
     StateIndex                   const&to        ,
     Callback                     const&callback  ){
-  assert(from<this->_states.size());
-  assert(std::get<CHOOSER>(this->_states.at(from))!=nullptr);
-  size_t stateSize = std::get<CHOOSER>(this->_states.at(from))->getSize();
+  assert(from<states.size());
+  assert(std::get<CHOOSER>(states.at(from))!=nullptr);
+  size_t stateSize = std::get<CHOOSER>(states.at(from))->getSize();
   for(size_t i=1;i<=stateSize;++i)
     if(symbolFrom[stateSize-i]>symbolTo[stateSize-i])return;
   bool running=true;
@@ -155,17 +188,30 @@ void MealyMachine::addTransition(
   }while(running);
 }
 
+/**
+ * @brief This function adds/creates transition between two states.
+ *
+ * @param from id of start state
+ * @param symbols transition symbol or symbols. The lenght of symbol must be
+ * multiplication of transitionChooser's state size.
+ * For example: transitionChooser in "from" state requires 2 bytes for every
+ * transition symbols; this implies that lenght of symbols needs to be 2,4,6,8,...
+ * If the lenght of symbols strings is greates than transitionChooser state
+ * size, then the string represents a set of transition symbols.
+ * @param to id of end state
+ * @param callback when the transition happens, this callback is executed.
+ */
 void MealyMachine::addTransition(
     StateIndex  const&from    ,
     std::string const&lex     ,
     StateIndex  const&to      ,
     Callback    const&callback){
-  assert(from<this->_states.size());
-  assert(std::get<CHOOSER>(this->_states.at(from))!=nullptr);
-  size_t stateSize = std::get<CHOOSER>(this->_states.at(from))->getSize();
+  assert(from<states.size());
+  assert(std::get<CHOOSER>(states.at(from))!=nullptr);
+  size_t stateSize = std::get<CHOOSER>(states.at(from))->getSize();
   if(lex.length()%stateSize!=0){
     std::stringstream ss;
-    ss << "MealyMachine::addTransition(";
+    ss << "mealyMachine::addTransition(";
     ss << from << ", " << lex << ", " << to << ") -";
     ss << "transition symbol length is not multiplication of state size: ";
     ss << stateSize;
@@ -176,6 +222,15 @@ void MealyMachine::addTransition(
     this->addTransition(from,(TransitionSymbol)lex.c_str()+offset,to,callback);
 }
 
+/**
+ * @brief This function adds/creates transition between two states.
+ *
+ * @param from id of start state
+ * @param symbols vector of symbols. Every element of symbols has to have lenght equal to
+ * multiplication of transitionChooser state size in "from" state.
+ * @param to id of end state
+ * @param callback when the transition happens, this callback is executed.
+ */
 void MealyMachine::addTransition(
     StateIndex              const&from    ,
     std::vector<std::string>const&symbols ,
@@ -185,6 +240,17 @@ void MealyMachine::addTransition(
     this->addTransition(from,x,to,callback);
 }
 
+/**
+ * @brief This function adds/creates transition between two states.
+ *
+ * @param from id of start state
+ * @param symbolFrom start of range of accepted transition symbols, it's lenght
+ * has to be equal to transitionChooser's state size
+ * @param symbolTo end of range of accepted transition symbols, it's lenght 
+ * has to be equal to transitionChooser's state size
+ * @param to id of end state
+ * @param callback when the transition happens, this callback is executed.
+ */
 void MealyMachine::addTransition(
     StateIndex  const&from      ,
     std::string const&symbolFrom,
@@ -194,74 +260,89 @@ void MealyMachine::addTransition(
   this->addTransition(from,(TransitionSymbol)symbolFrom.c_str(),(TransitionSymbol)symbolTo.c_str(),to,callback);
 }
 
+/**
+ * @brief This function adds/creates else transiton between two states.
+ * Else transition is executed if input does not correspond to any other transition in "from"
+ * state.
+ *
+ * @param from id of start state 
+ * @param to id of end state
+ * @param callback whet the transition happens, this callback is executed.
+ */
 void MealyMachine::addElseTransition(
     StateIndex   const&from    ,
     StateIndex   const&to      ,
     Callback     const&callback){
-  assert(from<this->_states.size());
-  assert(to<this->_states.size());
-  std::get<ELSE_TRANSITION>(this->_states[from]) = 
+  assert(from<states.size());
+  assert(to<states.size());
+  std::get<ELSE_TRANSITION>(states[from]) = 
     std::make_shared<Transition>(to,callback);
 }
 
-
+/**
+ * @brief This function adds/creates EOF transition.
+ * EOF transition is executed when the mealy machine reaches the end of input stream.
+ *
+ * @param from id of start state
+ * @param callback when the transition happens, this callback is executed.
+ */
 void MealyMachine::addEOFTransition(
     StateIndex   const&from    ,
     Callback     const&callback){
-  assert(from<this->_states.size());
-  std::get<EOF_TRANSITION>(this->_states[from]) = 
+  assert(from<states.size());
+  std::get<EOF_TRANSITION>(states[from]) = 
     std::make_shared<Transition>(0,callback);
 }
 
 void MealyMachine::begin(){
-  this->_currentState      = 0;
-  this->_symbolBufferIndex = 0;
-  this->_readingPosition   = 0;
+  currentState      = 0;
+  symbolBufferIndex = 0;
+  readingPosition   = 0;
 }
 
 bool MealyMachine::parse(BasicUnit const*data,size_t size){
-  assert(this->_currentState<this->_states.size());
+  assert(currentState<states.size());
   size_t read = 0;
-  auto const& state = this->_states[this->_currentState];
+  auto const& state = states[currentState];
   auto const& chooser = std::get<CHOOSER>(state);
   auto symbolSize = chooser->getSize();
-  while(this->_symbolBufferIndex>0){
-    read = std::min(symbolSize-this->_symbolBufferIndex,size);
-    std::memcpy(this->_symbolBuffer.data()+this->_symbolBufferIndex,data,
+  while(symbolBufferIndex>0){
+    read = std::min(symbolSize-symbolBufferIndex,size);
+    std::memcpy(symbolBuffer.data()+symbolBufferIndex,data,
         sizeof(BasicUnit)*read);
-    this->_symbolBufferIndex+=read;
-    if(this->_symbolBufferIndex<symbolSize)return true;
+    symbolBufferIndex+=read;
+    if(symbolBufferIndex<symbolSize)return true;
 
-    this->_currentSymbol = this->_symbolBuffer.data();
-    this->_currentSymbolSize = symbolSize;
-    this->_dontMove = false;
-    if(!this->_nextState(state))
+    currentSymbol = symbolBuffer.data();
+    currentSymbolSize = symbolSize;
+    dontMoveFlag = false;
+    if(!nextState(state))
       return false;
-    if(!this->_dontMove){
-      this->_readingPosition += symbolSize*sizeof(BasicUnit);
-      this->_symbolBufferIndex = 0;
+    if(!dontMoveFlag){
+      readingPosition += symbolSize*sizeof(BasicUnit);
+      symbolBufferIndex = 0;
     }
   }
 
   do{
-    auto const&state   = this->_states.at(this->_currentState);
+    auto const&state   = states.at(currentState);
     auto const&chooser = std::get<CHOOSER>(state);
     symbolSize = chooser->getSize();
 
     if(size-read<symbolSize){
       if(read == size)return true;
-      std::memcpy(this->_symbolBuffer.data(),data+read,size-read);
-      this->_symbolBufferIndex = size-read;
+      std::memcpy(symbolBuffer.data(),data+read,size-read);
+      symbolBufferIndex = size-read;
       return true;
     }
 
-    this->_currentSymbol = data+read;
-    this->_currentSymbolSize = symbolSize;
-    this->_dontMove = false;
-    if(!this->_nextState(state))
+    currentSymbol = data+read;
+    currentSymbolSize = symbolSize;
+    dontMoveFlag = false;
+    if(!nextState(state))
       return false;
-    if(!this->_dontMove){
-      this->_readingPosition += symbolSize*sizeof(BasicUnit);
+    if(!dontMoveFlag){
+      readingPosition += symbolSize*sizeof(BasicUnit);
       read += symbolSize*sizeof(BasicUnit);
     }
   }while(true);
@@ -273,19 +354,19 @@ bool MealyMachine::parse(char const*data){
 }
 
 bool MealyMachine::end(){
-  if(this->_symbolBufferIndex>0){
-    if(this->_quiet)return false;
+  if(symbolBufferIndex>0){
+    if(quiet)return false;
     std::stringstream ss;
-    ss << "MealyMachine::end() - ";
+    ss << "mealyMachine::end() - ";
     ss << "there are some unprocess bytes at the end of the stream";
     throw std::runtime_error(ss.str());
     return false;
   }
-  assert(this->_currentState<this->_states.size());
-  auto const&state = this->_states[this->_currentState];
+  assert(currentState<states.size());
+  auto const&state = states[currentState];
   auto const&transition = std::get<EOF_TRANSITION>(state);
   if(!transition)return false;
-  this->_call(*transition);
+  call(*transition);
   return true;
 }
 
@@ -304,12 +385,17 @@ const MealyMachine::TransitionIndex MealyMachine::nonexistingTransition =
 std::numeric_limits<MealyMachine::TransitionIndex>::max();
 
 
+/**
+ * @brief This function returns string representation of the Mealy Machine.
+ *
+ * @return string representation
+ */
 std::string MealyMachine::str()const{
   auto printTransition = [&](Transition const&t){
     std::stringstream ss;
     auto endStateIndex = std::get<STATE_INDEX>(t);
-    assert(endStateIndex<this->_states.size());
-    auto endState = this->_states.at(endStateIndex);
+    assert(endStateIndex<states.size());
+    auto endState = states.at(endStateIndex);
     if(std::get<NAME>(endState)!="")ss<<std::get<NAME>(endState);
     else ss<<endStateIndex;
     ss<<std::endl;
@@ -329,7 +415,7 @@ std::string MealyMachine::str()const{
 
   std::stringstream ss;
   size_t stateCounter = 0;
-  for(auto const&s:this->_states){
+  for(auto const&s:states){
     ss<<"state ";
     if(std::get<NAME>(s)!="")ss<<std::get<NAME>(s);
     else ss<<stateCounter;
@@ -370,13 +456,13 @@ std::string MealyMachine::str()const{
   return ss.str();
 }
 
-void MealyMachine::setQuiet(bool quiet){
+void MealyMachine::setQuiet(bool q){
   assert(this);
-  this->_quiet = quiet;
+  quiet = q;
 }
 
 bool MealyMachine::isQuiet()const{
   assert(this);
-  return this->_quiet;
+  return quiet;
 }
 

@@ -5,7 +5,7 @@
 #include<cstring>
 
 template<size_t N>
-class dsl::MapTransitionChooser: public dsl::TransitionChooser{
+class mealyMachine::MapTransitionChooser: public TransitionChooser{
   public:
     MapTransitionChooser():TransitionChooser(N){}
     virtual ~MapTransitionChooser()override{

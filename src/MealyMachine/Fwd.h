@@ -2,7 +2,7 @@
 
 #include<cstdlib>
 
-namespace dsl{
+namespace mealyMachine{
   class TransitionChooser;
   class MealyMachine;
   template<size_t>

@@ -1,59 +1,105 @@
-cmake_minimum_required(VERSION 3.1.0)
-cmake_policy(VERSION 3.1)
+cmake_minimum_required(VERSION 3.6.0)
 
-#You should set up this variable
-#Project name
-project(MealyMachine LANGUAGES CXX)
+project(MealyMachine)
 
-#You should set up this variable
-#Library name
+SET(CMAKE_CXX_STANDARD 14)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
+
+set(MAJOR_VERSION 1)
+set(MINOR_VERSION 0)
+set(REVISION_VERSION 0)
+
+include(GenerateExportHeader)
+
 set(LIB_NAME MealyMachine)
 
-#You should set up these variables
-#Library version
-set(${LIB_NAME}_MAJOR_VERSION    1)
-set(${LIB_NAME}_MINOR_VERSION    0)
-set(${LIB_NAME}_PATH_VERSION     0)
-set(${LIB_NAME}_REVISION_VERSION 0)
-
-#You should set up this variable
-#All includes
-set(INCLUDES
-  include/MealyMachine/Fwd.h
-  include/MealyMachine/MapTransitionChooser.h
-  include/MealyMachine/MealyMachine.h
-  include/MealyMachine/TransitionChooser.h
-  )
-
-#You should set up this variable
-#All sources
 set(SOURCES
-  src/MealyMachine.cpp
+  src/${LIB_NAME}/MealyMachine.cpp
   )
 
-#You should set up this variable
-#list of subprojects
-list(APPEND ${LIB_NAME}_subprojects )
+set(INCLUDES
+  src/${LIB_NAME}/Fwd.h
+  src/${LIB_NAME}/TransitionChooser.h
+  src/${LIB_NAME}/MapTransitionChooser.h
+  src/${LIB_NAME}/MealyMachine.h
+  )
 
-#You should set up this variable
-#list of subprojects that will be build as static library
-list(APPEND ${LIB_NAME}_build_as_static )
+add_library(${LIB_NAME} SHARED ${SOURCES} ${INCLUDES})
+add_library(${LIB_NAME}::${LIB_NAME} ALIAS ${LIB_NAME})
 
-set(INSTALL_INCLUDE_DIRECTORY   include/${LIB_NAME}/)
-set(INSTALL_CONFIG_DIRECTORY    lib/cmake/${LIB_NAME})
-set(GENERATED_INCLUDE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/)
-set(GENERATED_CONFIG_DIRECTORY  ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/)
+target_include_directories(${LIB_NAME} PUBLIC $<INSTALL_INTERFACE:include>)
+target_include_directories(${LIB_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
 
-#You should set up this variable
-#This variable contains external linking targets not build by this project
-set(${LIB_NAME}_EXTERNAL_TARGETS )
+option(BUILD_TESTS "toggle building of unit tests")
 
-#You should set up this variable
-#This variable contains extermal libraries that needs to be find by find_package
-list(APPEND ${LIB_NAME}_EXTERNAL_LIBRARIES_TO_FIND )
+#if(COMPUTE_GRAPH_BUILD_TESTS)
+#  add_subdirectory(tests)
+#endif()
 
-#You should set up this variable
-#This variable contains compilation options for this library
-set(${LIB_NAME}_COMPILATION_OPTION )
+set(LIB_NAME_LOWER)
+string(TOLOWER ${LIB_NAME} LIB_NAME_LOWER)
 
-include(CMakeLibrary/libraryExports.cmake)
+generate_export_header(${LIB_NAME} EXPORT_FILE_NAME ${LIB_NAME}/${LIB_NAME_LOWER}_export.h)
+
+set(${LIB_NAME}_VERSION ${MAJOR_VERSION}.${MINOR_VERSION}.${REVISION_VERSION})
+
+set_property(TARGET ${LIB_NAME} PROPERTY VERSION ${${LIB_NAME}_VERSION})
+set_property(TARGET ${LIB_NAME} PROPERTY SOVERSION 1)
+set_property(TARGET ${LIB_NAME} PROPERTY INTERFACE_${LIB_NAME}_MAJOR_VERSION 1)
+set_property(TARGET ${LIB_NAME} APPEND PROPERTY COMPATIBLE_INTERFACE_STRING ${LIB_NAME}_MAJOR_VERSION)
+
+install(TARGETS ${LIB_NAME} EXPORT ${LIB_NAME}Targets
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+  )
+
+install(
+  FILES
+  ${INCLUDES}
+  ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME_LOWER}_export.h
+  DESTINATION
+  include/${LIB_NAME}
+  COMPONENT
+  Devel
+  )
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}ConfigVersion.cmake
+  VERSION ${${LIB_NAME}_VERSION}
+  COMPATIBILITY SameMajorVersion
+  )
+
+export(EXPORT ${LIB_NAME}Targets
+  FILE ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}Targets.cmake
+  NAMESPACE ${LIB_NAME}::
+  )
+
+set(ConfigPackageLocation lib/cmake/${LIB_NAME})
+install(EXPORT ${LIB_NAME}Targets
+  FILE
+  ${LIB_NAME}Targets.cmake
+  NAMESPACE
+  ${LIB_NAME}::
+  DESTINATION
+  ${ConfigPackageLocation}
+  )
+
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}Config.cmake
+  "include(\${CMAKE_CURRENT_LIST_DIR}/${LIB_NAME}Targets.cmake)"
+  )
+
+install(
+  FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}Config.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}ConfigVersion.cmake
+  DESTINATION
+  ${ConfigPackageLocation}
+  COMPONENT
+  Devel
+  )
+

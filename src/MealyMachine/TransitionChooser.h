@@ -2,7 +2,7 @@
 
 #include<MealyMachine/MealyMachine.h>
 
-class dsl::TransitionChooser{
+class mealyMachine::TransitionChooser{
   public:
     inline TransitionChooser(size_t size);
     virtual inline ~TransitionChooser();
@@ -17,13 +17,13 @@ class dsl::TransitionChooser{
     size_t _size;
 };
 
-inline dsl::TransitionChooser::TransitionChooser(size_t size){
+inline mealyMachine::TransitionChooser::TransitionChooser(size_t size){
   this->_size = size;
 }
 
-inline dsl::TransitionChooser::~TransitionChooser(){}
+inline mealyMachine::TransitionChooser::~TransitionChooser(){}
 
-inline size_t dsl::TransitionChooser::getSize()const{
+inline size_t mealyMachine::TransitionChooser::getSize()const{
   return this->_size;
 }
 
