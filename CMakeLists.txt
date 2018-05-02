@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6.0)
+cmake_minimum_required(VERSION 3.10.1)
 
 project(MealyMachine)
 
@@ -21,9 +21,9 @@ set(SOURCES
 
 set(INCLUDES
   src/${LIB_NAME}/Fwd.h
-  src/${LIB_NAME}/TransitionChooser.h
   src/${LIB_NAME}/MapTransitionChooser.h
   src/${LIB_NAME}/MealyMachine.h
+  src/${LIB_NAME}/TransitionChooser.h
   )
 
 add_library(${LIB_NAME} SHARED ${SOURCES} ${INCLUDES})
@@ -31,12 +31,6 @@ add_library(${LIB_NAME}::${LIB_NAME} ALIAS ${LIB_NAME})
 
 target_include_directories(${LIB_NAME} PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories(${LIB_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
-
-option(BUILD_TESTS "toggle building of unit tests")
-
-#if(COMPUTE_GRAPH_BUILD_TESTS)
-#  add_subdirectory(tests)
-#endif()
 
 set(LIB_NAME_LOWER)
 string(TOLOWER ${LIB_NAME} LIB_NAME_LOWER)
@@ -90,7 +84,7 @@ install(EXPORT ${LIB_NAME}Targets
   )
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}Config.cmake
-  "include(\${CMAKE_CURRENT_LIST_DIR}/${LIB_NAME}Targets.cmake)"
+  "include($" "{CMAKE_CURRENT_LIST_DIR}/${LIB_NAME}Targets.cmake)\n"
   )
 
 install(
