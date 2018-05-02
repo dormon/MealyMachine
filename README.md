@@ -53,8 +53,8 @@ mm.parse("+1.1e-3f")
 mm.end(); //this will return true if the string was parsed
 ```
 
-More advance machine with actions:
-<img style="float:left"  src="https://github.com/dormon/MealyMachine/blob/master/img/example1.svg" width="360px">
+More advance machine with actions: <br>
+<img style="float:left"  src="https://github.com/dormon/MealyMachine/blob/master/img/example1.svg" width="720px">
 ```cpp
 
 //This machine reads operators: + - ++ -- and count their appereances 
