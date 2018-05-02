@@ -57,7 +57,7 @@ More advance machine with actions: <br>
 <img style="float:left"  src="https://github.com/dormon/MealyMachine/blob/master/img/example1.svg" width="720px">
 ```cpp
 
-//This machine reads operators: + - ++ -- and count their appereances 
+//This machine reads operators: + - ++ -- and count their numbers. 
 //When other symbol is recived, the machine reads everything and remembers
 //the first position of non +,- symbol and count number of characters
 
