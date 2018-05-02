@@ -7,4 +7,8 @@ namespace mealyMachine{
   class MealyMachine;
   template<size_t>
   class MapTransitionChooser;
+  namespace ex{
+    class Exception;
+    class ParsingError;
+  }
 }

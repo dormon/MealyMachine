@@ -24,6 +24,7 @@ set(INCLUDES
   src/${LIB_NAME}/MapTransitionChooser.h
   src/${LIB_NAME}/MealyMachine.h
   src/${LIB_NAME}/TransitionChooser.h
+  src/${LIB_NAME}/Exception.h
   )
 
 add_library(${LIB_NAME} SHARED ${SOURCES} ${INCLUDES})

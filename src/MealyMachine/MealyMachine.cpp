@@ -10,6 +10,7 @@
 #include <MealyMachine/MapTransitionChooser.h>
 #include <MealyMachine/MealyMachine.h>
 #include <MealyMachine/TransitionChooser.h>
+#include <MealyMachine/Exception.h>
 
 using namespace mealyMachine;
 
@@ -47,7 +48,7 @@ inline bool MealyMachine::_nextState(State const& state) {
       ss << _currentState << " using symbol: 0x"
          << getHexRepresentation(_currentSymbol, _currentSymbolSize);
       ss << " at position: " << _currentSymbol;
-      throw std::invalid_argument(ss.str());
+      throw ex::Exception(ss.str());
       return false;
     }
     transition = &*trans;
@@ -73,7 +74,7 @@ MealyMachine::StateIndex MealyMachine::addState(
     std::stringstream ss;
     ss << "MealyMachine::addState(" << name << ")";
     ss << " - transition chooser is nullptr";
-    throw std::invalid_argument(ss.str());
+    throw ex::Exception(ss.str());
   }
 
   if (chooser->getSize() > _symbolBuffer.size()) {
@@ -82,7 +83,7 @@ MealyMachine::StateIndex MealyMachine::addState(
     ss << " - transition chooser's symbol size (" << chooser->getSize();
     ss << ") is greater that this MealyMachine symbol buffer size (";
     ss << _symbolBuffer.size() << ")";
-    throw std::invalid_argument(ss.str());
+    throw ex::Exception(ss.str());
   }
 
   auto id = _states.size();
@@ -103,7 +104,7 @@ void MealyMachine::addTransition(StateIndex const&       from,
     ss << "MealyMachine::addTransition(" << from << "," << lex << "," << to
        << ")";
     ss << " - from symbol(" << from << " does not exists";
-    throw std::invalid_argument(ss.str());
+    throw ex::Exception(ss.str());
   }
 
   assert(from < _states.size());
@@ -165,7 +166,7 @@ void MealyMachine::addTransition(StateIndex const&  from,
     ss << from << ", " << lex << ", " << to << ") -";
     ss << "transition symbol length is not multiplication of state size: ";
     ss << stateSize;
-    throw std::invalid_argument(ss.str());
+    throw ex::Exception(ss.str());
     return;
   }
   for (size_t offset = 0; offset < lex.length(); offset += stateSize)
@@ -266,7 +267,7 @@ bool MealyMachine::end() {
     std::stringstream ss;
     ss << "MealyMachine::end() - ";
     ss << "there are some unprocess bytes at the end of the stream";
-    throw std::runtime_error(ss.str());
+    throw ex::ParsingError(ss.str());
     return false;
   }
   assert(_currentState < _states.size());
