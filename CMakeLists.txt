@@ -32,6 +32,12 @@ add_library(${LIB_NAME}::${LIB_NAME} ALIAS ${LIB_NAME})
 target_include_directories(${LIB_NAME} PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories(${LIB_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
 
+option(${LIB_NAME}_BUILD_TESTS "toggle building of unit tests")
+if(${LIB_NAME}_BUILD_TESTS)
+  add_subdirectory(tests)
+endif()
+
+
 set(LIB_NAME_LOWER)
 string(TOLOWER ${LIB_NAME} LIB_NAME_LOWER)
 
