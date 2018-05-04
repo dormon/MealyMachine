@@ -1,103 +1,101 @@
 cmake_minimum_required(VERSION 3.10.1)
 
-project(MealyMachine)
+project(
+  MealyMachine
+  VERSION 1.0.1
+  )
 
 SET(CMAKE_CXX_STANDARD 14)
+
+set(SOURCES
+  src/${PROJECT_NAME}/MealyMachine.cpp
+  )
+
+set(INCLUDES
+  src/${PROJECT_NAME}/Fwd.h
+  src/${PROJECT_NAME}/MapTransitionChooser.h
+  src/${PROJECT_NAME}/MealyMachine.h
+  src/${PROJECT_NAME}/TransitionChooser.h
+  src/${PROJECT_NAME}/Exception.h
+  )
+
+option(BUILD_SHARED_LIBS "build this library as shared")
+
+add_library(${PROJECT_NAME} ${SOURCES} ${INCLUDES})
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+include(GNUInstallDirs)
+
+target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
 
-set(MAJOR_VERSION 1)
-set(MINOR_VERSION 0)
-set(REVISION_VERSION 0)
-
-include(GenerateExportHeader)
-
-set(LIB_NAME MealyMachine)
-
-set(SOURCES
-  src/${LIB_NAME}/MealyMachine.cpp
-  )
-
-set(INCLUDES
-  src/${LIB_NAME}/Fwd.h
-  src/${LIB_NAME}/MapTransitionChooser.h
-  src/${LIB_NAME}/MealyMachine.h
-  src/${LIB_NAME}/TransitionChooser.h
-  src/${LIB_NAME}/Exception.h
-  )
-
-add_library(${LIB_NAME} SHARED ${SOURCES} ${INCLUDES})
-add_library(${LIB_NAME}::${LIB_NAME} ALIAS ${LIB_NAME})
-
-target_include_directories(${LIB_NAME} PUBLIC $<INSTALL_INTERFACE:include>)
-target_include_directories(${LIB_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
-
-option(${LIB_NAME}_BUILD_TESTS "toggle building of unit tests")
-if(${LIB_NAME}_BUILD_TESTS)
+option(${PROJECT_NAME}_BUILD_TESTS "toggle building of unit tests")
+if(${PROJECT_NAME}_BUILD_TESTS)
   add_subdirectory(tests)
 endif()
 
 
-set(LIB_NAME_LOWER)
-string(TOLOWER ${LIB_NAME} LIB_NAME_LOWER)
+set(PROJECT_NAME_LOWER)
+string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
-generate_export_header(${LIB_NAME} EXPORT_FILE_NAME ${LIB_NAME}/${LIB_NAME_LOWER}_export.h)
+include(GenerateExportHeader)
+generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME ${PROJECT_NAME}/${PROJECT_NAME_LOWER}_export.h)
 
-set(${LIB_NAME}_VERSION ${MAJOR_VERSION}.${MINOR_VERSION}.${REVISION_VERSION})
+set_property(TARGET ${PROJECT_NAME} PROPERTY VERSION ${PROJECT_VERSION})
+set_property(TARGET ${PROJECT_NAME} PROPERTY SOVERSION ${PROJECT_VERSION_MAJOR})
+set_property(TARGET ${PROJECT_NAME} PROPERTY INTERFACE_${PROJECT_NAME}_MAJOR_VERSION ${PROJECT_VERSION_MAJOR})
+set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY COMPATIBLE_INTERFACE_STRING ${PROJECT_NAME}_MAJOR_VERSION)
 
-set_property(TARGET ${LIB_NAME} PROPERTY VERSION ${${LIB_NAME}_VERSION})
-set_property(TARGET ${LIB_NAME} PROPERTY SOVERSION 1)
-set_property(TARGET ${LIB_NAME} PROPERTY INTERFACE_${LIB_NAME}_MAJOR_VERSION 1)
-set_property(TARGET ${LIB_NAME} APPEND PROPERTY COMPATIBLE_INTERFACE_STRING ${LIB_NAME}_MAJOR_VERSION)
-
-install(TARGETS ${LIB_NAME} EXPORT ${LIB_NAME}Targets
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
-  INCLUDES DESTINATION include
+install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Targets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
   )
 
 install(
   FILES
   ${INCLUDES}
-  ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME_LOWER}_export.h
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME_LOWER}_export.h
   DESTINATION
-  include/${LIB_NAME}
+  ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
   COMPONENT
   Devel
   )
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
-  ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}ConfigVersion.cmake
-  VERSION ${${LIB_NAME}_VERSION}
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake
+  VERSION ${${PROJECT_NAME}_VERSION}
   COMPATIBILITY SameMajorVersion
   )
 
-export(EXPORT ${LIB_NAME}Targets
-  FILE ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}Targets.cmake
-  NAMESPACE ${LIB_NAME}::
+export(EXPORT ${PROJECT_NAME}Targets
+  FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}Targets.cmake
+  NAMESPACE ${PROJECT_NAME}::
   )
 
-set(ConfigPackageLocation lib/cmake/${LIB_NAME})
-install(EXPORT ${LIB_NAME}Targets
+set(ConfigPackageLocation lib/cmake/${PROJECT_NAME})
+install(EXPORT ${PROJECT_NAME}Targets
   FILE
-  ${LIB_NAME}Targets.cmake
+  ${PROJECT_NAME}Targets.cmake
   NAMESPACE
-  ${LIB_NAME}::
+  ${PROJECT_NAME}::
   DESTINATION
   ${ConfigPackageLocation}
   )
 
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}Config.cmake
-  "include($" "{CMAKE_CURRENT_LIST_DIR}/${LIB_NAME}Targets.cmake)\n"
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}Config.cmake
+  "include($" "{CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}Targets.cmake)\n"
   )
 
 install(
   FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}Config.cmake
-  ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}ConfigVersion.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}Config.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake
   DESTINATION
   ${ConfigPackageLocation}
   COMPONENT
