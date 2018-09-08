@@ -21,18 +21,18 @@
  * You can create Finite State Machines and specify actions for every
  * transition.
  */
-class MEALYMACHINE_EXPORT mealyMachine::MealyMachine {
+class mealyMachine::MealyMachine {
  public:
   using StateIndex       = size_t;
   using BasicUnit        = uint8_t;
   using TransitionSymbol = BasicUnit const*;
   using Callback         = std::function<void(MealyMachine*)>;
   using SimpleCallback   = std::function<void()>;
-  MealyMachine(size_t largestState = 1);
-  virtual ~MealyMachine();
+  MEALYMACHINE_EXPORT MealyMachine(size_t largestState = 1);
+  MEALYMACHINE_EXPORT virtual ~MealyMachine();
 
-  StateIndex addState(std::shared_ptr<TransitionChooser> const& chooser,
-                      std::string const&                        name = "");
+  MEALYMACHINE_EXPORT StateIndex addState(std::shared_ptr<TransitionChooser> const& chooser,
+                                          std::string const&                        name = "");
 
   /**
    * @brief This function adds new state to Mealy machine.
@@ -42,7 +42,7 @@ class MEALYMACHINE_EXPORT mealyMachine::MealyMachine {
    *
    * @return id of new state
    */
-  StateIndex addState(std::string const& name = "");
+  MEALYMACHINE_EXPORT StateIndex addState(std::string const& name = "");
 
   /**
    * @brief This function adds/creates transition between two states
@@ -53,10 +53,10 @@ class MEALYMACHINE_EXPORT mealyMachine::MealyMachine {
    * @param to id of end state
    * @param callback when the transition happens, this callback is executed.
    */
-  void addTransition(StateIndex const&       from,
-                     TransitionSymbol const& symbol,
-                     StateIndex const&       to,
-                     Callback const&         callback = nullptr);
+  MEALYMACHINE_EXPORT void addTransition(StateIndex const&       from,
+                                         TransitionSymbol const& symbol,
+                                         StateIndex const&       to,
+                                         Callback const&         callback = nullptr);
 
   /**
    * @brief This function adds/creates transition between two states.
@@ -66,10 +66,10 @@ class MEALYMACHINE_EXPORT mealyMachine::MealyMachine {
    * @param to id of end state
    * @param callback when the transition happens, this callback is executed.
    */
-  void addTransition(StateIndex const&                    from,
-                     std::vector<TransitionSymbol> const& symbols,
-                     StateIndex const&                    to,
-                     Callback const&                      callback = nullptr);
+  MEALYMACHINE_EXPORT void addTransition(StateIndex const&                    from,
+                                         std::vector<TransitionSymbol> const& symbols,
+                                         StateIndex const&                    to,
+                                         Callback const&                      callback = nullptr);
 
   /**
    * @brief This function adds/creates transition between two states.
@@ -80,11 +80,11 @@ class MEALYMACHINE_EXPORT mealyMachine::MealyMachine {
    * @param to id of end state
    * @param callback when the transition happens, this callback is executed.
    */
-  void addTransition(StateIndex const&       from,
-                     TransitionSymbol const& symbolFrom,
-                     TransitionSymbol const& symbolTo,
-                     StateIndex const&       to,
-                     Callback const&         callback = nullptr);
+  MEALYMACHINE_EXPORT void addTransition(StateIndex const&       from,
+                                         TransitionSymbol const& symbolFrom,
+                                         TransitionSymbol const& symbolTo,
+                                         StateIndex const&       to,
+                                         Callback const&         callback = nullptr);
 
   /**
    * @brief This function adds/creates transition between two states.
@@ -100,10 +100,10 @@ class MEALYMACHINE_EXPORT mealyMachine::MealyMachine {
    * @param to id of end state
    * @param callback when the transition happens, this callback is executed.
    */
-  void addTransition(StateIndex const&  from,
-                     std::string const& symbols,
-                     StateIndex const&  to,
-                     Callback const&    callback = nullptr);
+  MEALYMACHINE_EXPORT void addTransition(StateIndex const&  from,
+                                         std::string const& symbols,
+                                         StateIndex const&  to,
+                                         Callback const&    callback = nullptr);
 
   /**
    * @brief This function adds/creates transition between two states.
@@ -115,10 +115,10 @@ class MEALYMACHINE_EXPORT mealyMachine::MealyMachine {
    * @param to id of end state
    * @param callback when the transition happens, this callback is executed.
    */
-  void addTransition(StateIndex const&               from,
-                     std::vector<std::string> const& symbols,
-                     StateIndex const&               to,
-                     Callback const&                 callback = nullptr);
+  MEALYMACHINE_EXPORT void addTransition(StateIndex const&               from,
+                                         std::vector<std::string> const& symbols,
+                                         StateIndex const&               to,
+                                         Callback const&                 callback = nullptr);
 
   /**
    * @brief This function adds/creates transition between two states.
@@ -131,11 +131,11 @@ class MEALYMACHINE_EXPORT mealyMachine::MealyMachine {
    * @param to id of end state
    * @param callback when the transition happens, this callback is executed.
    */
-  void addTransition(StateIndex const&  from,
-                     std::string const& symbolFrom,
-                     std::string const& symbloTo,
-                     StateIndex const&  to,
-                     Callback const&    callback = nullptr);
+  MEALYMACHINE_EXPORT void addTransition(StateIndex const&  from,
+                                         std::string const& symbolFrom,
+                                         std::string const& symbloTo,
+                                         StateIndex const&  to,
+                                         Callback const&    callback = nullptr);
 
   /**
    * @brief This function adds/creates else transiton between two states.
@@ -146,9 +146,9 @@ class MEALYMACHINE_EXPORT mealyMachine::MealyMachine {
    * @param to id of end state
    * @param callback whet the transition happens, this callback is executed.
    */
-  void addElseTransition(StateIndex const& from,
-                         StateIndex const& to,
-                         Callback const&   callback = nullptr);
+  MEALYMACHINE_EXPORT void addElseTransition(StateIndex const& from,
+                                             StateIndex const& to,
+                                             Callback const&   callback = nullptr);
 
   /**
    * @brief This function adds/creates EOF transition.
@@ -158,15 +158,15 @@ class MEALYMACHINE_EXPORT mealyMachine::MealyMachine {
    * @param from id of start state
    * @param callback when the transition happens, this callback is executed.
    */
-  void addEOFTransition(StateIndex const& from,
-                        Callback const&   callback = nullptr);
+  MEALYMACHINE_EXPORT void addEOFTransition(StateIndex const& from,
+                                            Callback const&   callback = nullptr);
 
-  virtual void begin();
-  virtual bool parse(BasicUnit const* data, size_t size);
-  bool         parse(char const* data);
-  virtual bool end();
-  bool         match(BasicUnit const* data, size_t size);
-  bool         match(char const* data);
+  MEALYMACHINE_EXPORT virtual void begin();
+  MEALYMACHINE_EXPORT virtual bool parse(BasicUnit const* data, size_t size);
+  MEALYMACHINE_EXPORT bool         parse(char const* data);
+  MEALYMACHINE_EXPORT virtual bool end();
+  MEALYMACHINE_EXPORT bool         match(BasicUnit const* data, size_t size);
+  MEALYMACHINE_EXPORT bool         match(char const* data);
 
   /**
    * @brief This function returns the position in input stream.
@@ -204,9 +204,9 @@ class MEALYMACHINE_EXPORT mealyMachine::MealyMachine {
    *
    * @return string representation
    */
-  virtual std::string str() const;
-  void                setQuiet(bool quiet);
-  bool                isQuiet() const;
+  MEALYMACHINE_EXPORT virtual std::string str() const;
+  MEALYMACHINE_EXPORT void                setQuiet(bool quiet);
+  MEALYMACHINE_EXPORT bool                isQuiet() const;
 
  protected:
   using TransitionSymbolIndex = size_t;
