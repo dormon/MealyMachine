@@ -1,7 +1,6 @@
-#include<MealyMachine/MealyMachine.h>
-
-#define CATCH_CONFIG_MAIN
 #include<catch.hpp>
+
+#include<MealyMachine/MealyMachine.h>
 
 using namespace mealyMachine;
 

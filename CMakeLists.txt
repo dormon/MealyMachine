@@ -52,6 +52,16 @@ set(InterfaceDebugLibraryVariables )
 
 SET(CMAKE_CXX_STANDARD 14)
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
+
+option(${PROJECT_NAME}_BUILD_TESTS "toggle building of unit tests")
+if(${PROJECT_NAME}_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+  add_test(NAME baseTest COMMAND tests)
+endif()
+
 ###############################################################################
 ###############################################################################
 ###############################################################################

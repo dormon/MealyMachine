@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.10.1)
+cmake_minimum_required(VERSION 3.13.0)
 
-add_executable(tests tests.cpp catch.hpp)
+add_executable(tests TestsMain.cpp tests.cpp catch.hpp)
 
 target_link_libraries(tests MealyMachine::MealyMachine)
